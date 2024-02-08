@@ -8,4 +8,3 @@ Users are able to post pictures and give a likes for another.
 - Django
 - Django Rest framework
 - Flask
-- React
