@@ -1,33 +1,20 @@
-import os
-from dotenv import main
 from flask import Flask
-from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import UniqueConstraint
-from flask_migrate import Migrate
-
-main.load_dotenv()
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("SQLALCHEMY_DATABASE_URI")
-
-CORS(app)
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+from config import Config
+from extensions import db, migrate, cors
 
 
-class Product(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=False)
-    title = db.Column(db.String(200))
-    image = db.Column(db.String(200))
+def create_app(config_class=Config):
+    app = Flask(__name__)
+    app.config.from_object(config_class)
+
+    db.init_app(app)
+    migrate.init_app(app, db)
+    cors.init_app(app)
+
+    return app
 
 
-class ProductUser(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer)
-    product_id = db.Column(db.Integer)
-
-    UniqueConstraint('user_id', 'product_id', name='user_product_unique')
+app = create_app()
 
 
 @app.route('/')
