@@ -31,11 +31,13 @@ def callback(ch, method, properties, body):
             product.title = data['title']
             product.image = data['image']
             db.session.commit()
+            print('Product Updated')
 
         elif properties.content_type == 'product_deleted':
             product = Product.query.get(data)
             db.session.delete(product)
             db.session.commit()
+            print('Product Deleted')
 
 
 channel.basic_consume(queue='main', on_message_callback=callback, auto_ack=True)
