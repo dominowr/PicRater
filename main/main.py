@@ -1,6 +1,9 @@
-from flask import Flask
+import requests
+from flask import Flask, jsonify, abort
 from config import Config
 from extensions import db, migrate, cors
+from models import Product, ProductUser
+from producer import publish
 
 
 def create_app(config_class=Config):
@@ -17,9 +20,28 @@ def create_app(config_class=Config):
 app = create_app()
 
 
-@app.route('/')
+@app.route('/api/products/')
 def index():
-    return 'Hello'
+    return jsonify(Product.query.all())
+
+
+@app.route('/api/products/<int:id>/like/', methods=['POST'])
+def like(id):
+    response = requests.get('http://docker.for.mac.localhost:8000/api/user/')
+    json = response.json()
+
+    try:
+        product_user = ProductUser(user_id=json['id'], product_id=id)
+        db.session.add(product_user)
+        db.session.commit()
+
+        publish('product_liked', id)
+    except:
+        abort(400, 'You already like this product!')
+
+    return jsonify({
+        'message': 'success'
+    })
 
 
 if __name__ == '__main__':
